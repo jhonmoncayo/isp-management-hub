@@ -72,7 +72,7 @@ const defaultValues: Partial<NotificationValues> = {
 export function NotificationSettings() {
   const [isSaving, setIsSaving] = useState(false);
 
-  const form = useForm<NotificationValues>({
+  const form = useForm<z.infer<typeof notificationSchema>>({
     resolver: zodResolver(notificationSchema),
     defaultValues,
   });
@@ -81,7 +81,7 @@ export function NotificationSettings() {
   const watchServiceEnabled = form.watch("serviceEnabled");
   const watchTechnicalEnabled = form.watch("technicalEnabled");
 
-  function onSubmit(data: NotificationValues) {
+  function onSubmit(data: z.infer<typeof notificationSchema>) {
     setIsSaving(true);
     
     // Simulate API call

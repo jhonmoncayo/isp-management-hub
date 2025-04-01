@@ -86,17 +86,17 @@ export function SystemSettings() {
   const [isBackingUp, setIsBackingUp] = useState(false);
   const [lastBackup, setLastBackup] = useState<string | null>("2023-09-15 14:30:45");
 
-  const mikrotikForm = useForm<MikrotikFormValues>({
+  const mikrotikForm = useForm<z.infer<typeof mikrotikFormSchema>>({
     resolver: zodResolver(mikrotikFormSchema),
     defaultValues: defaultMikrotikValues,
   });
 
-  const twilioForm = useForm<TwilioFormValues>({
+  const twilioForm = useForm<z.infer<typeof twilioFormSchema>>({
     resolver: zodResolver(twilioFormSchema),
     defaultValues: defaultTwilioValues,
   });
 
-  function onSubmitMikrotik(data: MikrotikFormValues) {
+  function onSubmitMikrotik(data: z.infer<typeof mikrotikFormSchema>) {
     setIsSavingMikrotik(true);
     
     // Simulate API call
@@ -110,7 +110,7 @@ export function SystemSettings() {
     }, 1000);
   }
 
-  function onSubmitTwilio(data: TwilioFormValues) {
+  function onSubmitTwilio(data: z.infer<typeof twilioFormSchema>) {
     setIsSavingTwilio(true);
     
     // Simulate API call

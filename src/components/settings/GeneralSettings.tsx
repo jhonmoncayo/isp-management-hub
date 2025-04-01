@@ -65,12 +65,12 @@ const defaultValues: Partial<GeneralFormValues> = {
 export function GeneralSettings() {
   const [isSaving, setIsSaving] = useState(false);
 
-  const form = useForm<GeneralFormValues>({
+  const form = useForm<z.infer<typeof generalFormSchema>>({
     resolver: zodResolver(generalFormSchema),
     defaultValues,
   });
 
-  function onSubmit(data: GeneralFormValues) {
+  function onSubmit(data: z.infer<typeof generalFormSchema>) {
     setIsSaving(true);
     
     // Simulate API call

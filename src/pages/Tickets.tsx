@@ -3,12 +3,10 @@ import { useState } from "react";
 import { TicketsTable } from "@/components/tickets/TicketsTable";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { CreateTicketDialog } from "@/components/tickets/CreateTicketDialog";
 
 export default function Tickets() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const navigate = useNavigate();
 
   return (
     <div className="space-y-6">
