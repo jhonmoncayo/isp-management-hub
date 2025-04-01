@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,42 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// ISP theme colors
+				isp: {
+					blue: {
+						DEFAULT: '#1E40AF',
+						50: '#EBF2FF',
+						100: '#DBEAFF',
+						200: '#B8D5FD',
+						300: '#8DBCFD',
+						400: '#5A9BF9',
+						500: '#3B82F6',
+						600: '#1E68D7',
+						700: '#1E40AF',
+						800: '#18328A',
+						900: '#122564',
+					},
+					teal: {
+						DEFAULT: '#0D9488',
+						50: '#E6FFFA',
+						100: '#B2F5EA',
+						200: '#81E6D9',
+						300: '#4FD1C5',
+						400: '#38B2AC',
+						500: '#0D9488',
+						600: '#047857',
+						700: '#036C4E',
+						800: '#05603A',
+						900: '#014737',
+					},
+					// Status colors
+					status: {
+						active: '#10B981',    // Green
+						inactive: '#F43F5E',  // Red
+						pending: '#F59E0B',   // Amber
+						maintenance: '#6366F1' // Indigo
+					}
 				}
 			},
 			borderRadius: {
@@ -84,11 +121,16 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-slow': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.5' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-slow': 'pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
 			}
 		}
 	},
