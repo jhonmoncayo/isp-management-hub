@@ -15,11 +15,11 @@ import { Sidebar } from "./Sidebar";
 import { useMikrotikStore } from "@/store/mikrotikStore";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";  // Corrected import
 
 export function TopBar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();  // Corrected hook name
   const { logout } = useMikrotikStore();
   const navigate = useNavigate();
   const { toast } = useToast();
