@@ -89,13 +89,13 @@ export function CreateTicketDialog({ open, onOpenChange }) {
   async function onSubmit(data) {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('tickets').insert([{
+      const { error } = await supabase.from('tickets').insert({
         title: data.title,
         description: data.description,
         client_id: data.client_id,
         priority: data.priority,
         status: 'open',
-      }]);
+      });
 
       if (error) throw error;
 

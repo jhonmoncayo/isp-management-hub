@@ -119,12 +119,12 @@ export function CreateInvoiceDialog({ open, onOpenChange }) {
   async function onSubmit(data) {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('invoices').insert([{
+      const { error } = await supabase.from('invoices').insert({
         client_id: data.client_id,
         amount: data.amount,
         status: 'pending',
         due_date: data.due_date.toISOString(),
-      }]);
+      });
 
       if (error) throw error;
 
