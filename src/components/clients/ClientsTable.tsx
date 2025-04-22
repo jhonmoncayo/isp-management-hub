@@ -38,6 +38,11 @@ interface Client {
   mac_address: string | null;
   created_at: string;
   updated_at: string;
+  plan?: {
+    name: string;
+    download_speed: number;
+    upload_speed: number;
+  };
 }
 
 export function ClientsTable() {
@@ -55,14 +60,16 @@ export function ClientsTable() {
       setLoading(true);
       const { data, error } = await supabase
         .from('clients')
-        .select('*')
+        .select(`
+          *,
+          plan:plans(name, download_speed, upload_speed)
+        `)
         .order('name');
       
       if (error) {
         throw error;
       }
 
-      // Ensure the status is of the correct type
       const typedClients = data?.map(client => ({
         ...client,
         status: client.status as "active" | "inactive" | "suspended"
@@ -90,6 +97,51 @@ export function ClientsTable() {
 
   const handleViewClient = (clientId: string) => {
     navigate(`/clients/${clientId}`);
+  };
+
+  const handleEditClient = async (clientId: string) => {
+    // For now, just navigate to the client detail page
+    navigate(`/clients/${clientId}`);
+  };
+
+  const handleCreateInvoice = async (clientId: string) => {
+    // Navigate to billing with client preselected
+    navigate(`/billing?client=${clientId}`);
+  };
+
+  const handleCreateTicket = async (clientId: string) => {
+    // Navigate to tickets with client preselected
+    navigate(`/tickets?client=${clientId}`);
+  };
+
+  const handleUpdateStatus = async (clientId: string, newStatus: "active" | "inactive" | "suspended") => {
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .update({ status: newStatus })
+        .eq('id', clientId);
+
+      if (error) throw error;
+
+      // Update local state
+      setClients(clients.map(client => 
+        client.id === clientId 
+          ? { ...client, status: newStatus }
+          : client
+      ));
+
+      toast({
+        title: 'Estado actualizado',
+        description: `El estado del cliente ha sido actualizado a ${newStatus}`,
+      });
+    } catch (error) {
+      console.error('Error updating client status:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo actualizar el estado del cliente',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -142,7 +194,18 @@ export function ClientsTable() {
                       </p>
                     </div>
                   </TableCell>
-                  <TableCell>{client.plan_id || "Sin plan"}</TableCell>
+                  <TableCell>
+                    {client.plan ? (
+                      <div className="text-sm">
+                        <p className="font-medium">{client.plan.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {client.plan.download_speed}↓ / {client.plan.upload_speed}↑ Mbps
+                        </p>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">Sin plan</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <StatusBadge status={client.status} />
                   </TableCell>
@@ -162,13 +225,31 @@ export function ClientsTable() {
                         <DropdownMenuItem onClick={() => handleViewClient(client.id)}>
                           Ver detalles
                         </DropdownMenuItem>
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
-                        <DropdownMenuItem>Generar factura</DropdownMenuItem>
-                        <DropdownMenuItem>Crear ticket</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600">
-                          Suspender servicio
+                        <DropdownMenuItem onClick={() => handleEditClient(client.id)}>
+                          Editar
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleCreateInvoice(client.id)}>
+                          Generar factura
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleCreateTicket(client.id)}>
+                          Crear ticket
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        {client.status === 'active' ? (
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onClick={() => handleUpdateStatus(client.id, 'suspended')}
+                          >
+                            Suspender servicio
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem 
+                            className="text-green-600"
+                            onClick={() => handleUpdateStatus(client.id, 'active')}
+                          >
+                            Activar servicio
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
