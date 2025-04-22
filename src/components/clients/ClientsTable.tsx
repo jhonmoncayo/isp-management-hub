@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
+import { MoreHorizontal } from "lucide-react";
 
 interface Client {
   id: string;
@@ -99,18 +100,15 @@ export function ClientsTable() {
     navigate(`/clients/${clientId}`);
   };
 
-  const handleEditClient = async (clientId: string) => {
-    // For now, just navigate to the client detail page
+  const handleEditClient = (clientId: string) => {
     navigate(`/clients/${clientId}`);
   };
 
-  const handleCreateInvoice = async (clientId: string) => {
-    // Navigate to billing with client preselected
+  const handleCreateInvoice = (clientId: string) => {
     navigate(`/billing?client=${clientId}`);
   };
 
-  const handleCreateTicket = async (clientId: string) => {
-    // Navigate to tickets with client preselected
+  const handleCreateTicket = (clientId: string) => {
     navigate(`/tickets?client=${clientId}`);
   };
 
@@ -134,6 +132,9 @@ export function ClientsTable() {
         title: 'Estado actualizado',
         description: `El estado del cliente ha sido actualizado a ${newStatus}`,
       });
+
+      // Refresh the clients list
+      fetchClients();
     } catch (error) {
       console.error('Error updating client status:', error);
       toast({
@@ -218,7 +219,7 @@ export function ClientsTable() {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm">
                           <span className="sr-only">Abrir menu</span>
-                          <ThreeDotsIcon className="h-4 w-4" />
+                          <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
@@ -287,26 +288,5 @@ function StatusBadge({ status }: { status: "active" | "inactive" | "suspended" }
       {status === "inactive" && "Inactivo"}
       {status === "suspended" && "Suspendido"}
     </Badge>
-  );
-}
-
-function ThreeDotsIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <circle cx="12" cy="12" r="1" />
-      <circle cx="19" cy="12" r="1" />
-      <circle cx="5" cy="12" r="1" />
-    </svg>
   );
 }
