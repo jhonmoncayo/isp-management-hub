@@ -7,10 +7,24 @@ import { PlusIcon, WifiIcon, ActivityIcon, ServerIcon } from "lucide-react";
 import { NetworkStatus } from "@/components/network/NetworkStatus";
 import { NetworkMikrotik } from "@/components/network/NetworkMikrotik";
 import { CreateDeviceDialog } from "@/components/network/CreateDeviceDialog";
+import { useSearchParams } from "react-router-dom";
 
 export default function Network() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("devices");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabParam || "devices");
+
+  useEffect(() => {
+    if (tabParam && ["devices", "status", "mikrotik"].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setSearchParams({ tab: value });
+  };
 
   return (
     <div className="space-y-6">
@@ -30,7 +44,7 @@ export default function Network() {
       <Tabs 
         defaultValue="devices" 
         value={activeTab} 
-        onValueChange={setActiveTab}
+        onValueChange={handleTabChange}
         className="space-y-4"
       >
         <TabsList>

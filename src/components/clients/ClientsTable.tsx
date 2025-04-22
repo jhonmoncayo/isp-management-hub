@@ -32,6 +32,12 @@ interface Client {
   ip_address: string | null;
   plan_id: string | null;
   registration_date: string;
+  address: string;
+  phone: string;
+  email: string | null;
+  mac_address: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export function ClientsTable() {
@@ -56,7 +62,13 @@ export function ClientsTable() {
         throw error;
       }
 
-      setClients(data || []);
+      // Ensure the status is of the correct type
+      const typedClients = data?.map(client => ({
+        ...client,
+        status: client.status as "active" | "inactive" | "suspended"
+      })) || [];
+
+      setClients(typedClients);
     } catch (error) {
       console.error('Error fetching clients:', error);
       toast({
@@ -80,12 +92,6 @@ export function ClientsTable() {
     navigate(`/clients/${clientId}`);
   };
 
-  const handleNewClient = () => {
-    // This would typically open a dialog or navigate to a new client page
-    // For now, let's just log this action
-    console.log('New client button clicked');
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
@@ -95,7 +101,6 @@ export function ClientsTable() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-sm"
         />
-        <Button onClick={handleNewClient}>Nuevo Cliente</Button>
       </div>
 
       <div className="rounded-md border">
@@ -186,7 +191,7 @@ function formatDate(dateString: string): string {
   });
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status }: { status: "active" | "inactive" | "suspended" }) {
   return (
     <Badge
       variant="outline"

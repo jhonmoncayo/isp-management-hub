@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -56,8 +55,9 @@ export function Sidebar() {
       href: "/network",
       icon: <Wifi className="h-5 w-5" />,
       submenu: [
-        { title: "Estado", href: "/network/status" },
-        { title: "Mikrotik", href: "/network/mikrotik" },
+        { title: "Dispositivos", href: "/network?tab=devices" },
+        { title: "Estado", href: "/network?tab=status" },
+        { title: "Mikrotik", href: "/network?tab=mikrotik" },
       ],
     },
     {
