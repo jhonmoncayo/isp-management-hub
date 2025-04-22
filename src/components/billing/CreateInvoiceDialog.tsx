@@ -54,6 +54,7 @@ export function CreateInvoiceDialog({ open, onOpenChange }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [plans, setPlans] = useState([]);
+  const [lastInvoiceNumber, setLastInvoiceNumber] = useState('');
 
   const form = useForm({
     resolver: zodResolver(invoiceFormSchema),
@@ -95,9 +96,27 @@ export function CreateInvoiceDialog({ open, onOpenChange }) {
       }
     }
 
+    async function fetchLastInvoiceNumber() {
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('invoice_number')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error('Error fetching last invoice number:', error);
+      } else if (data && data.length > 0) {
+        setLastInvoiceNumber(data[0].invoice_number);
+      } else {
+        // Default first invoice number if none exists
+        setLastInvoiceNumber('F-00000');
+      }
+    }
+
     if (open) {
       fetchClients();
       fetchPlans();
+      fetchLastInvoiceNumber();
       form.reset();
     }
   }, [open, form]);
@@ -116,14 +135,25 @@ export function CreateInvoiceDialog({ open, onOpenChange }) {
     }
   };
 
+  function generateNextInvoiceNumber(lastNumber) {
+    // Extract the numeric part and increment
+    const numericPart = parseInt(lastNumber.replace('F-', ''), 10);
+    const nextNumber = numericPart + 1;
+    // Pad with leading zeros to maintain format
+    return `F-${String(nextNumber).padStart(5, '0')}`;
+  }
+
   async function onSubmit(data) {
     setIsSubmitting(true);
     try {
+      const nextInvoiceNumber = generateNextInvoiceNumber(lastInvoiceNumber);
+      
       const { error } = await supabase.from('invoices').insert({
         client_id: data.client_id,
         amount: data.amount,
         status: 'pending',
         due_date: data.due_date.toISOString(),
+        invoice_number: nextInvoiceNumber
       });
 
       if (error) throw error;

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Table,
@@ -20,79 +20,70 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 interface Client {
   id: string;
   name: string;
-  document: string;
-  plan: string;
+  document_number: string;
+  document_type: string;
   status: "active" | "inactive" | "suspended";
-  ipAddress: string;
-  lastPayment: string;
+  ip_address: string | null;
+  plan_id: string | null;
+  registration_date: string;
 }
 
-const mockClients: Client[] = [
-  {
-    id: "C-1001",
-    name: "Juan Pérez",
-    document: "1234567890",
-    plan: "Plan Medio: 8M/2M",
-    status: "active",
-    ipAddress: "192.168.1.101",
-    lastPayment: "2023-09-15",
-  },
-  {
-    id: "C-1002",
-    name: "María García",
-    document: "2345678901",
-    plan: "Plan Básico: 6M/2M",
-    status: "active",
-    ipAddress: "192.168.1.102",
-    lastPayment: "2023-09-10",
-  },
-  {
-    id: "C-1003",
-    name: "Carlos Rodríguez",
-    document: "3456789012",
-    plan: "Plan Alto: 10M/2M",
-    status: "suspended",
-    ipAddress: "192.168.1.103",
-    lastPayment: "2023-08-25",
-  },
-  {
-    id: "C-1004",
-    name: "Ana Martínez",
-    document: "4567890123",
-    plan: "Plan Medio: 8M/2M",
-    status: "active",
-    ipAddress: "192.168.1.104",
-    lastPayment: "2023-09-05",
-  },
-  {
-    id: "C-1005",
-    name: "Luis Sánchez",
-    document: "5678901234",
-    plan: "Plan Básico: 6M/2M",
-    status: "inactive",
-    ipAddress: "192.168.1.105",
-    lastPayment: "2023-08-10",
-  },
-];
-
 export function ClientsTable() {
-  const [clients] = useState<Client[]>(mockClients);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  async function fetchClients() {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('name');
+      
+      if (error) {
+        throw error;
+      }
+
+      setClients(data || []);
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudieron cargar los clientes',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const filteredClients = clients.filter(
     (client) =>
-      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.document.includes(searchTerm) ||
-      client.ipAddress.includes(searchTerm)
+      client.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.document_number?.includes(searchTerm) ||
+      client.ip_address?.includes(searchTerm)
   );
 
   const handleViewClient = (clientId: string) => {
     navigate(`/clients/${clientId}`);
+  };
+
+  const handleNewClient = () => {
+    // This would typically open a dialog or navigate to a new client page
+    // For now, let's just log this action
+    console.log('New client button clicked');
   };
 
   return (
@@ -104,7 +95,7 @@ export function ClientsTable() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-sm"
         />
-        <Button>Nuevo Cliente</Button>
+        <Button onClick={handleNewClient}>Nuevo Cliente</Button>
       </div>
 
       <div className="rounded-md border">
@@ -115,12 +106,18 @@ export function ClientsTable() {
               <TableHead>Plan</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>IP</TableHead>
-              <TableHead>Último Pago</TableHead>
+              <TableHead>Registro</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredClients.length === 0 ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 text-center">
+                  Cargando clientes...
+                </TableCell>
+              </TableRow>
+            ) : filteredClients.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={6}
@@ -136,18 +133,18 @@ export function ClientsTable() {
                     <div>
                       <p className="font-medium">{client.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        Doc: {client.document}
+                        {client.document_type}: {client.document_number}
                       </p>
                     </div>
                   </TableCell>
-                  <TableCell>{client.plan}</TableCell>
+                  <TableCell>{client.plan_id || "Sin plan"}</TableCell>
                   <TableCell>
                     <StatusBadge status={client.status} />
                   </TableCell>
                   <TableCell>
-                    <code className="text-sm">{client.ipAddress}</code>
+                    <code className="text-sm">{client.ip_address || "No asignada"}</code>
                   </TableCell>
-                  <TableCell>{formatDate(client.lastPayment)}</TableCell>
+                  <TableCell>{formatDate(client.registration_date)}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

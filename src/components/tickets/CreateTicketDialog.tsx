@@ -50,6 +50,7 @@ const ticketFormSchema = z.object({
 export function CreateTicketDialog({ open, onOpenChange }) {
   const [clients, setClients] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lastTicketNumber, setLastTicketNumber] = useState('');
 
   const form = useForm({
     resolver: zodResolver(ticketFormSchema),
@@ -80,21 +81,50 @@ export function CreateTicketDialog({ open, onOpenChange }) {
       }
     }
 
+    async function fetchLastTicketNumber() {
+      const { data, error } = await supabase
+        .from('tickets')
+        .select('ticket_number')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error('Error fetching last ticket number:', error);
+      } else if (data && data.length > 0) {
+        setLastTicketNumber(data[0].ticket_number);
+      } else {
+        // Default first ticket number if none exists
+        setLastTicketNumber('T-00000');
+      }
+    }
+
     if (open) {
       fetchClients();
+      fetchLastTicketNumber();
       form.reset();
     }
   }, [open, form]);
 
+  function generateNextTicketNumber(lastNumber) {
+    // Extract the numeric part and increment
+    const numericPart = parseInt(lastNumber.replace('T-', ''), 10);
+    const nextNumber = numericPart + 1;
+    // Pad with leading zeros to maintain format
+    return `T-${String(nextNumber).padStart(5, '0')}`;
+  }
+
   async function onSubmit(data) {
     setIsSubmitting(true);
     try {
+      const nextTicketNumber = generateNextTicketNumber(lastTicketNumber);
+      
       const { error } = await supabase.from('tickets').insert({
         title: data.title,
         description: data.description,
         client_id: data.client_id,
         priority: data.priority,
         status: 'open',
+        ticket_number: nextTicketNumber
       });
 
       if (error) throw error;
